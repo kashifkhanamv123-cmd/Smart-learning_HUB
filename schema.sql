@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `email` VARCHAR(150) NOT NULL UNIQUE,
   `password_hash` VARCHAR(255) NOT NULL,
   `role` VARCHAR(20) DEFAULT 'student',
+  `profile_picture` VARCHAR(255) DEFAULT NULL,
   `gender` VARCHAR(20) DEFAULT NULL,
   `country` VARCHAR(100) DEFAULT NULL,
   `reset_token` VARCHAR(64) DEFAULT NULL,

@@ -55,15 +55,16 @@ function seedDatabase($pdo) {
     if (!$pdo) return;
     
     try {
-        // Auto-migrate: add gender column if missing
-        $hasGender = $pdo->query("SHOW COLUMNS FROM users LIKE 'gender'")->rowCount();
-        if (!$hasGender) {
-            $pdo->exec("ALTER TABLE users ADD COLUMN `gender` VARCHAR(20) DEFAULT NULL AFTER `role`");
+        // Auto-migration for new profile columns
+        $columns = $pdo->query("SHOW COLUMNS FROM users")->fetchAll(PDO::FETCH_COLUMN);
+        if (!in_array('gender', $columns)) {
+            $pdo->exec("ALTER TABLE users ADD COLUMN gender VARCHAR(50) DEFAULT NULL");
         }
-        // Auto-migrate: add country column if missing
-        $hasCountry = $pdo->query("SHOW COLUMNS FROM users LIKE 'country'")->rowCount();
-        if (!$hasCountry) {
-            $pdo->exec("ALTER TABLE users ADD COLUMN `country` VARCHAR(100) DEFAULT NULL AFTER `gender`");
+        if (!in_array('country', $columns)) {
+            $pdo->exec("ALTER TABLE users ADD COLUMN country VARCHAR(100) DEFAULT NULL");
+        }
+        if (!in_array('profile_picture', $columns)) {
+            $pdo->exec("ALTER TABLE users ADD COLUMN profile_picture VARCHAR(255) DEFAULT NULL");
         }
     } catch (Exception $e) {
         error_log("DB Migration Error: " . $e->getMessage());
