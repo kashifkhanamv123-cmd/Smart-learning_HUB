@@ -18,7 +18,7 @@ function isActive($file, $dir = '') {
     </div>
     
     <nav class="sidebar-nav">
-        <a href="<?php echo getAssetPath('index.php'); ?>" class="nav-item <?php echo isActive('index.php'); ?>">
+        <a href="<?php echo getAssetPath('dashboard.php'); ?>" class="nav-item <?php echo isActive('dashboard.php'); ?>">
             <i class="fa-solid fa-chart-pie"></i>
             <span>Dashboard</span>
         </a>

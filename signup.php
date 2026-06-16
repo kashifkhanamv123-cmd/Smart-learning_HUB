@@ -13,7 +13,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Redirect if already logged in
 if (isset($_SESSION['user_id'])) {
-    header("Location: index.php");
+    header("Location: dashboard.php");
     exit();
 }
 
@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     sendWelcomeMail($email, $name);
 
                     setFlash('success', 'Account created successfully! You can now log in.');
-                    header("Location: login.php");
+                    header("Location: dashboard.php");
                     exit();
                 } else {
                     $error = 'Account creation failed. Please try again.';

@@ -19,7 +19,7 @@ if (isset($_SESSION['user_id'])) {
     if ($_SESSION['user_role'] === 'admin') {
         header("Location: admin/index.php");
     } else {
-        header("Location: index.php");
+        header("Location: dashboard.php");
     }
     exit();
 }
@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($user['role'] === 'admin') {
                     header("Location: admin/index.php");
                 } else {
-                    header("Location: index.php");
+                    header("Location: dashboard.php");
                 }
                 exit();
             } else {

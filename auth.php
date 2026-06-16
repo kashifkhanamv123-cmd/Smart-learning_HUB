@@ -27,9 +27,9 @@ function require_admin() {
     require_login();
     
     if ($_SESSION['user_role'] !== 'admin') {
-        // Resolve path to index.php dynamically depending on current page folder depth
+        // Resolve path to dashboard.php dynamically depending on current page folder depth
         $currentDir = basename(dirname($_SERVER['SCRIPT_NAME']));
-        $dashboardUrl = ($currentDir === 'admin') ? '../index.php' : 'index.php';
+        $dashboardUrl = ($currentDir === 'admin') ? '../dashboard.php' : 'dashboard.php';
         
         $_SESSION['flash'] = [
             'type' => 'error',
