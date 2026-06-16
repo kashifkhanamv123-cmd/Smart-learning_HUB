@@ -1,8 +1,11 @@
 <?php
 $pageTitle = 'Manage Users';
-require_once dirname(__DIR__) . '/auth.php';
-require_once dirname(__DIR__) . '/db.php';
+require_once dirname(__DIR__) . '/auth.php'; // also loads db.php
 require_once dirname(__DIR__) . '/includes/functions.php';
+
+// Guard: show setup page if DB is unavailable before any queries run
+checkDbConnection();
+/** @var \PDO $pdo */
 
 // Enforce admin role
 require_admin();
@@ -12,7 +15,7 @@ $adminUserId = $_SESSION['user_id'];
 // Handle Role Toggling
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'toggle_role') {
     $targetUserId = intval($_POST['user_id']);
-    
+
     if ($targetUserId === $adminUserId) {
         setFlash('error', 'Action Denied: You cannot modify your own administrative role.');
     } else {
@@ -21,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $stmt = $pdo->prepare("SELECT role FROM users WHERE id = ?");
             $stmt->execute([$targetUserId]);
             $currentRole = $stmt->fetchColumn();
-            
+
             if ($currentRole) {
                 $newRole = ($currentRole === 'admin') ? 'student' : 'admin';
                 $update = $pdo->prepare("UPDATE users SET role = ? WHERE id = ?");
@@ -39,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 // Handle User Deletion
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_user') {
     $targetUserId = intval($_POST['user_id']);
-    
+
     if ($targetUserId === $adminUserId) {
         setFlash('error', 'Action Denied: You cannot delete your own administrative account.');
     } else {
@@ -112,7 +115,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
                                             <i class="fa-solid fa-user-shield"></i>
                                         </button>
                                     </form>
-                                    
+
                                     <!-- Delete Profile Form -->
                                     <form action="users.php" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete this user? All their study logs and notes will be lost.');" style="display:inline;">
                                         <input type="hidden" name="action" value="delete_user">

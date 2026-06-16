@@ -1,8 +1,11 @@
 <?php
 $pageTitle = 'Courses';
-require_once __DIR__ . '/auth.php';
-require_once __DIR__ . '/db.php';
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/auth.php'; // also loads db.php
+require_once __DIR__ . '/includes/functions.php';
+
+// Guard: show setup page if DB is unavailable before any queries run
+checkDbConnection();
+/** @var \PDO $pdo */
 
 $userId = $_SESSION['user_id'];
 $courseId = isset($_GET['course_id']) ? intval($_GET['course_id']) : 0;
@@ -36,6 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     header("Location: courses.php?course_id=$postCourseId&lesson_id=$postLessonId");
     exit();
 }
+
+// All POST handling complete — safe to output HTML now
+require_once __DIR__ . '/includes/header.php';
 
 // --------------------------------------------------------------------------
 // View State 1: Active Lesson Player

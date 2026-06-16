@@ -55,6 +55,21 @@ function seedDatabase($pdo) {
     if (!$pdo) return;
     
     try {
+        // Auto-migrate: add gender column if missing
+        $hasGender = $pdo->query("SHOW COLUMNS FROM users LIKE 'gender'")->rowCount();
+        if (!$hasGender) {
+            $pdo->exec("ALTER TABLE users ADD COLUMN `gender` VARCHAR(20) DEFAULT NULL AFTER `role`");
+        }
+        // Auto-migrate: add country column if missing
+        $hasCountry = $pdo->query("SHOW COLUMNS FROM users LIKE 'country'")->rowCount();
+        if (!$hasCountry) {
+            $pdo->exec("ALTER TABLE users ADD COLUMN `country` VARCHAR(100) DEFAULT NULL AFTER `gender`");
+        }
+    } catch (Exception $e) {
+        error_log("DB Migration Error: " . $e->getMessage());
+    }
+    
+    try {
         // Check if user table is empty
         $stmt = $pdo->query("SELECT COUNT(*) FROM users");
         $count = $stmt->fetchColumn();

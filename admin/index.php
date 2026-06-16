@@ -1,7 +1,11 @@
 <?php
 $pageTitle = 'Admin Stats';
-require_once dirname(__DIR__) . '/auth.php';
-require_once dirname(__DIR__) . '/db.php';
+require_once dirname(__DIR__) . '/auth.php'; // also loads db.php
+require_once dirname(__DIR__) . '/includes/functions.php';
+
+// Guard: show setup page if DB is unavailable
+checkDbConnection();
+/** @var \PDO $pdo */
 
 // Enforce administrative privileges
 require_admin();
@@ -36,7 +40,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
             <p>Total Users</p>
         </div>
     </div>
-    
+
     <div class="glass-card stat-card">
         <div class="stat-icon green"><i class="fa-solid fa-book"></i></div>
         <div class="stat-info">
@@ -44,7 +48,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
             <p>Courses</p>
         </div>
     </div>
-    
+
     <div class="glass-card stat-card">
         <div class="stat-icon rose"><i class="fa-solid fa-circle-question"></i></div>
         <div class="stat-info">
@@ -52,7 +56,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
             <p>Quizzes</p>
         </div>
     </div>
-    
+
     <div class="glass-card stat-card">
         <div class="stat-icon amber"><i class="fa-solid fa-stopwatch"></i></div>
         <div class="stat-info">
@@ -74,13 +78,13 @@ require_once dirname(__DIR__) . '/includes/header.php';
                 <h4 style="color:#fff;">Student Roles</h4>
                 <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0;">Promote users and delete profiles</p>
             </a>
-            
+
             <a href="courses.php" class="glass-card" style="margin-bottom:0; text-align:center; padding:30px; display:flex; flex-direction:column; align-items:center; gap:12px;">
                 <i class="fa-solid fa-folder-open" style="font-size:2.2rem; color:var(--success);"></i>
                 <h4 style="color:#fff;">Course Builder</h4>
                 <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0;">Create lessons and coding tutorials</p>
             </a>
-            
+
             <a href="quizzes.php" class="glass-card" style="margin-bottom:0; text-align:center; padding:30px; display:flex; flex-direction:column; align-items:center; gap:12px; grid-column:span 2;">
                 <i class="fa-solid fa-square-poll-vertical" style="font-size:2.2rem; color:var(--warning);"></i>
                 <h4 style="color:#fff;">Quiz Manager</h4>
@@ -88,7 +92,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
             </a>
         </div>
     </div>
-    
+
     <!-- Recent Users Feed -->
     <div class="glass-card">
         <div class="glass-card-header">

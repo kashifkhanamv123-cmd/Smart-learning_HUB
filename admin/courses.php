@@ -1,8 +1,11 @@
 <?php
 $pageTitle = 'Manage Courses';
-require_once dirname(__DIR__) . '/auth.php';
-require_once dirname(__DIR__) . '/db.php';
+require_once dirname(__DIR__) . '/auth.php'; // also loads db.php
 require_once dirname(__DIR__) . '/includes/functions.php';
+
+// Guard: show setup page if DB is unavailable before any queries run
+checkDbConnection();
+/** @var \PDO $pdo */
 
 // Enforce admin role
 require_admin();
@@ -13,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $description = trim($_POST['description']);
     $difficulty = trim($_POST['difficulty']);
     $duration = trim($_POST['duration']);
-    
+
     if (!empty($title)) {
         try {
             $insert = $pdo->prepare("INSERT INTO courses (title, description, difficulty, duration) VALUES (?, ?, ?, ?)");
@@ -35,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $title = trim($_POST['title']);
     $content = $_POST['content'];
     $sortOrder = intval($_POST['sort_order']);
-    
+
     if ($courseId > 0 && !empty($title)) {
         try {
             $insert = $pdo->prepare("INSERT INTO lessons (course_id, title, content, sort_order) VALUES (?, ?, ?, ?)");
@@ -115,7 +118,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
                     </tr>
                 <?php else: ?>
                     <?php foreach ($courses as $c): ?>
-                        <?php 
+                        <?php
                         // Fetch lessons count
                         $stmt = $pdo->prepare("SELECT COUNT(*) FROM lessons WHERE course_id = ?");
                         $stmt->execute([$c['id']]);
@@ -133,7 +136,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
                                     <button type="button" class="action-btn edit" title="Manage Lessons" onclick="openManageLessonsModal(<?php echo $c['id']; ?>, '<?php echo htmlspecialchars(addslashes($c['title'])); ?>')">
                                         <i class="fa-solid fa-list-check"></i>
                                     </button>
-                                    
+
                                     <form action="courses.php" method="POST" onsubmit="return confirm('Are you sure you want to delete this course and all its lessons? This action is irreversible.');" style="display:inline;">
                                         <input type="hidden" name="action" value="delete_course">
                                         <input type="hidden" name="course_id" value="<?php echo $c['id']; ?>">
@@ -161,17 +164,17 @@ require_once dirname(__DIR__) . '/includes/header.php';
         <form action="courses.php" method="POST">
             <div class="modal-body">
                 <input type="hidden" name="action" value="add_course">
-                
+
                 <div class="form-group">
                     <label for="course_title">Course Title</label>
                     <input type="text" name="title" id="course_title" class="form-control" placeholder="e.g. Master React JS" required>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="course_desc">Description</label>
                     <textarea name="description" id="course_desc" class="form-control" rows="3" placeholder="Brief outline of course details..."></textarea>
                 </div>
-                
+
                 <div class="form-row">
                     <div class="form-group">
                         <label for="course_diff">Difficulty Level</label>
@@ -181,7 +184,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
                             <option value="Advanced">Advanced</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="course_dur">Duration</label>
                         <input type="text" name="duration" id="course_dur" class="form-control" placeholder="e.g. 5 hours" value="3 hours">
@@ -208,9 +211,9 @@ require_once dirname(__DIR__) . '/includes/header.php';
             <form action="courses.php" method="POST" style="margin-bottom:30px; padding-bottom:20px; border-bottom:1px solid var(--border-color);">
                 <input type="hidden" name="action" value="add_lesson">
                 <input type="hidden" name="course_id" id="lessons_course_id">
-                
+
                 <h4 style="color:#fff; margin-bottom:15px;"><i class="fa-solid fa-plus" style="color:var(--success);"></i> Add Lesson</h4>
-                
+
                 <div class="form-row">
                     <div class="form-group">
                         <label for="lesson_title">Lesson Title</label>
@@ -221,17 +224,17 @@ require_once dirname(__DIR__) . '/includes/header.php';
                         <input type="number" name="sort_order" id="lesson_sort" class="form-control" value="0" min="0">
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="lesson_content">Lesson Content (Markdown style supported)</label>
                     <textarea name="content" id="lesson_content" class="form-control" rows="8" placeholder="# Header&#10;&#10;Use markdown syntax elements for listing and code segments..." required></textarea>
                 </div>
-                
+
                 <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Save Lesson</button>
             </form>
-            
+
             <h4 style="color:#fff; margin-bottom:15px;">Existing Lessons</h4>
-            
+
             <!-- Table listing existing lessons for course -->
             <div class="table-responsive">
                 <table class="admin-table" style="font-size:0.85rem;">
@@ -254,7 +257,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
 
 <!-- Load raw lessons lists in scripts context for quick modal lookup -->
 <script id="lessonsRawData" type="application/json">
-    <?php 
+    <?php
     // Fetch all lessons in DB grouped by course
     $allLessons = $pdo->query("SELECT id, course_id, title, content, sort_order FROM lessons ORDER BY sort_order ASC, id ASC")->fetchAll();
     echo json_encode($allLessons);
@@ -262,33 +265,34 @@ require_once dirname(__DIR__) . '/includes/header.php';
 </script>
 
 <script>
-function openAddCourseModal() {
-    document.getElementById('addCourseModal').classList.add('active');
-}
-function closeAddCourseModal() {
-    document.getElementById('addCourseModal').classList.remove('active');
-}
+    function openAddCourseModal() {
+        document.getElementById('addCourseModal').classList.add('active');
+    }
 
-function openManageLessonsModal(courseId, courseTitle) {
-    document.getElementById('lessons_course_id').value = courseId;
-    document.getElementById('manageLessonsTitle').textContent = 'Lessons in "' + courseTitle + '"';
-    
-    // Parse raw lessons database
-    const rawLessons = JSON.parse(document.getElementById('lessonsRawData').textContent);
-    
-    // Filter lessons matching active course
-    const courseLessons = rawLessons.filter(l => l.course_id == courseId);
-    
-    const tbody = document.getElementById('lessonsTableBody');
-    tbody.innerHTML = '';
-    
-    if (courseLessons.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-dark); padding:20px;">No lessons found in this course.</td></tr>';
-    } else {
-        courseLessons.forEach(l => {
-            const wordCount = l.content ? l.content.split(/\s+/).length : 0;
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
+    function closeAddCourseModal() {
+        document.getElementById('addCourseModal').classList.remove('active');
+    }
+
+    function openManageLessonsModal(courseId, courseTitle) {
+        document.getElementById('lessons_course_id').value = courseId;
+        document.getElementById('manageLessonsTitle').textContent = 'Lessons in "' + courseTitle + '"';
+
+        // Parse raw lessons database
+        const rawLessons = JSON.parse(document.getElementById('lessonsRawData').textContent);
+
+        // Filter lessons matching active course
+        const courseLessons = rawLessons.filter(l => l.course_id == courseId);
+
+        const tbody = document.getElementById('lessonsTableBody');
+        tbody.innerHTML = '';
+
+        if (courseLessons.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-dark); padding:20px;">No lessons found in this course.</td></tr>';
+        } else {
+            courseLessons.forEach(l => {
+                const wordCount = l.content ? l.content.split(/\s+/).length : 0;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
                 <td>${l.sort_order}</td>
                 <td style="color:#fff; font-weight:500;">${escapeHtml(l.title)}</td>
                 <td>${wordCount} words</td>
@@ -302,20 +306,20 @@ function openManageLessonsModal(courseId, courseTitle) {
                     </form>
                 </td>
             `;
-            tbody.appendChild(tr);
-        });
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.getElementById('manageLessonsModal').classList.add('active');
     }
-    
-    document.getElementById('manageLessonsModal').classList.add('active');
-}
 
-function closeManageLessonsModal() {
-    document.getElementById('manageLessonsModal').classList.remove('active');
-}
+    function closeManageLessonsModal() {
+        document.getElementById('manageLessonsModal').classList.remove('active');
+    }
 
-function escapeHtml(str) {
-    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-}
+    function escapeHtml(str) {
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
 </script>
 
 <?php require_once dirname(__DIR__) . '/includes/footer.php'; ?>

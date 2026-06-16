@@ -1,8 +1,11 @@
 <?php
 $pageTitle = 'Manage Quizzes';
-require_once dirname(__DIR__) . '/auth.php';
-require_once dirname(__DIR__) . '/db.php';
+require_once dirname(__DIR__) . '/auth.php'; // also loads db.php
 require_once dirname(__DIR__) . '/includes/functions.php';
+
+// Guard: show setup page if DB is unavailable before any queries run
+checkDbConnection();
+/** @var \PDO $pdo */
 
 // Enforce admin role
 require_admin();
@@ -12,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $title = trim($_POST['title']);
     $description = trim($_POST['description']);
     $duration = intval($_POST['duration_mins']);
-    
+
     if (!empty($title)) {
         try {
             $insert = $pdo->prepare("INSERT INTO quizzes (title, description, duration_mins) VALUES (?, ?, ?)");
@@ -38,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $optD = trim($_POST['option_d']);
     $correct = trim($_POST['correct_option']);
     $explanation = trim($_POST['explanation']);
-    
+
     if ($quizId > 0 && !empty($qText) && !empty($optA) && !empty($optB) && !empty($optC) && !empty($optD) && !empty($correct)) {
         try {
             $insert = $pdo->prepare("INSERT INTO questions (quiz_id, question_text, option_a, option_b, option_c, option_d, correct_option, explanation) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
@@ -118,7 +121,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
                     </tr>
                 <?php else: ?>
                     <?php foreach ($quizzes as $q): ?>
-                        <?php 
+                        <?php
                         // Fetch questions count
                         $stmt = $pdo->prepare("SELECT COUNT(*) FROM questions WHERE quiz_id = ?");
                         $stmt->execute([$q['id']]);
@@ -134,7 +137,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
                                     <button type="button" class="action-btn edit" title="Manage Questions" onclick="openManageQuestionsModal(<?php echo $q['id']; ?>, '<?php echo htmlspecialchars(addslashes($q['title'])); ?>')">
                                         <i class="fa-solid fa-circle-question"></i>
                                     </button>
-                                    
+
                                     <form action="quizzes.php" method="POST" onsubmit="return confirm('Are you sure you want to delete this quiz and all its questions?');" style="display:inline;">
                                         <input type="hidden" name="action" value="delete_quiz">
                                         <input type="hidden" name="quiz_id" value="<?php echo $q['id']; ?>">
@@ -162,17 +165,17 @@ require_once dirname(__DIR__) . '/includes/header.php';
         <form action="quizzes.php" method="POST">
             <div class="modal-body">
                 <input type="hidden" name="action" value="add_quiz">
-                
+
                 <div class="form-group">
                     <label for="quiz_title">Quiz Title</label>
                     <input type="text" name="title" id="quiz_title" class="form-control" placeholder="e.g. JavaScript Arrays Check" required>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="quiz_desc">Description</label>
                     <input type="text" name="description" id="quiz_desc" class="form-control" placeholder="e.g. Evaluates filter, map, and reduce methods">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="quiz_dur">Duration (Minutes)</label>
                     <input type="number" name="duration_mins" id="quiz_dur" class="form-control" value="15" min="1" required>
@@ -198,14 +201,14 @@ require_once dirname(__DIR__) . '/includes/header.php';
             <form action="quizzes.php" method="POST" style="margin-bottom:30px; padding-bottom:20px; border-bottom:1px solid var(--border-color);">
                 <input type="hidden" name="action" value="add_question">
                 <input type="hidden" name="quiz_id" id="questions_quiz_id">
-                
+
                 <h4 style="color:#fff; margin-bottom:15px;"><i class="fa-solid fa-plus" style="color:var(--success);"></i> Add Question</h4>
-                
+
                 <div class="form-group">
                     <label for="question_text">Question Text</label>
                     <textarea name="question_text" id="question_text" class="form-control" rows="3" placeholder="Write question details..." required></textarea>
                 </div>
-                
+
                 <div class="form-row">
                     <div class="form-group">
                         <label for="opt_a">Option A</label>
@@ -216,7 +219,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
                         <input type="text" name="option_b" id="opt_b" class="form-control" placeholder="Second option" required>
                     </div>
                 </div>
-                
+
                 <div class="form-row">
                     <div class="form-group">
                         <label for="opt_c">Option C</label>
@@ -227,7 +230,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
                         <input type="text" name="option_d" id="opt_d" class="form-control" placeholder="Fourth option" required>
                     </div>
                 </div>
-                
+
                 <div class="form-row">
                     <div class="form-group">
                         <label for="correct_opt">Correct Option</label>
@@ -238,18 +241,18 @@ require_once dirname(__DIR__) . '/includes/header.php';
                             <option value="D">D</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="explanation_text">Detailed Explanation (Visible on review)</label>
                         <input type="text" name="explanation" id="explanation_text" class="form-control" placeholder="Why is this option correct?">
                     </div>
                 </div>
-                
+
                 <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Save Question</button>
             </form>
-            
+
             <h4 style="color:#fff; margin-bottom:15px;">Existing Questions</h4>
-            
+
             <!-- Table listing existing questions -->
             <div class="table-responsive">
                 <table class="admin-table" style="font-size:0.85rem;">
@@ -271,36 +274,37 @@ require_once dirname(__DIR__) . '/includes/header.php';
 
 <!-- Raw questions data for quick dynamic lookup -->
 <script id="questionsRawData" type="application/json">
-    <?php 
+    <?php
     $allQuestions = $pdo->query("SELECT id, quiz_id, question_text, correct_option FROM questions ORDER BY id ASC")->fetchAll();
     echo json_encode($allQuestions);
     ?>
 </script>
 
 <script>
-function openAddQuizModal() {
-    document.getElementById('addQuizModal').classList.add('active');
-}
-function closeAddQuizModal() {
-    document.getElementById('addQuizModal').classList.remove('active');
-}
+    function openAddQuizModal() {
+        document.getElementById('addQuizModal').classList.add('active');
+    }
 
-function openManageQuestionsModal(quizId, quizTitle) {
-    document.getElementById('questions_quiz_id').value = quizId;
-    document.getElementById('manageQuestionsTitle').textContent = 'Questions in "' + quizTitle + '"';
-    
-    const rawQuestions = JSON.parse(document.getElementById('questionsRawData').textContent);
-    const quizQuestions = rawQuestions.filter(q => q.quiz_id == quizId);
-    
-    const tbody = document.getElementById('questionsTableBody');
-    tbody.innerHTML = '';
-    
-    if (quizQuestions.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--text-dark); padding:20px;">No questions found in this quiz.</td></tr>';
-    } else {
-        quizQuestions.forEach((q, idx) => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
+    function closeAddQuizModal() {
+        document.getElementById('addQuizModal').classList.remove('active');
+    }
+
+    function openManageQuestionsModal(quizId, quizTitle) {
+        document.getElementById('questions_quiz_id').value = quizId;
+        document.getElementById('manageQuestionsTitle').textContent = 'Questions in "' + quizTitle + '"';
+
+        const rawQuestions = JSON.parse(document.getElementById('questionsRawData').textContent);
+        const quizQuestions = rawQuestions.filter(q => q.quiz_id == quizId);
+
+        const tbody = document.getElementById('questionsTableBody');
+        tbody.innerHTML = '';
+
+        if (quizQuestions.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--text-dark); padding:20px;">No questions found in this quiz.</td></tr>';
+        } else {
+            quizQuestions.forEach((q, idx) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
                 <td style="color:#fff; text-align:left;">
                     <span style="opacity:0.5; font-size:0.75rem;">${idx + 1}.</span> 
                     ${escapeHtml(q.question_text)}
@@ -316,20 +320,20 @@ function openManageQuestionsModal(quizId, quizTitle) {
                     </form>
                 </td>
             `;
-            tbody.appendChild(tr);
-        });
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.getElementById('manageQuestionsModal').classList.add('active');
     }
-    
-    document.getElementById('manageQuestionsModal').classList.add('active');
-}
 
-function closeManageQuestionsModal() {
-    document.getElementById('manageQuestionsModal').classList.remove('active');
-}
+    function closeManageQuestionsModal() {
+        document.getElementById('manageQuestionsModal').classList.remove('active');
+    }
 
-function escapeHtml(str) {
-    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-}
+    function escapeHtml(str) {
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
 </script>
 
 <?php require_once dirname(__DIR__) . '/includes/footer.php'; ?>

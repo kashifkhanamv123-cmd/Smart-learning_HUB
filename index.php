@@ -1,7 +1,12 @@
 <?php
 $pageTitle = 'Dashboard';
-require_once __DIR__ . '/auth.php';
-require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/auth.php'; // also loads db.php
+require_once __DIR__ . '/includes/functions.php';
+
+// Guard: show setup page if DB is unavailable before any queries run
+checkDbConnection();
+/** @var \PDO $pdo */
+
 require_once __DIR__ . '/includes/header.php';
 
 $userId = $_SESSION['user_id'];

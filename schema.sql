@@ -8,7 +8,9 @@ CREATE TABLE IF NOT EXISTS `users` (
   `name` VARCHAR(100) NOT NULL,
   `email` VARCHAR(150) NOT NULL UNIQUE,
   `password_hash` VARCHAR(255) NOT NULL,
-  `role` VARCHAR(20) DEFAULT 'student', -- 'student' or 'admin'
+  `role` VARCHAR(20) DEFAULT 'student',
+  `gender` VARCHAR(20) DEFAULT NULL,
+  `country` VARCHAR(100) DEFAULT NULL,
   `reset_token` VARCHAR(64) DEFAULT NULL,
   `reset_token_expires` DATETIME DEFAULT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -121,3 +123,9 @@ CREATE TABLE IF NOT EXISTS `study_sessions` (
   FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
   UNIQUE KEY `user_date_unique` (`user_id`, `session_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
+-- MIGRATION: Run these if upgrading an existing installation
+-- ============================================================
+ALTER TABLE `users` ADD COLUMN IF NOT EXISTS `gender` VARCHAR(20) DEFAULT NULL AFTER `role`;
+ALTER TABLE `users` ADD COLUMN IF NOT EXISTS `country` VARCHAR(100) DEFAULT NULL AFTER `gender`;

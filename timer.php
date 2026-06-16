@@ -1,7 +1,11 @@
 <?php
 $pageTitle = 'Study Timer';
-require_once __DIR__ . '/auth.php';
-require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/auth.php'; // also loads db.php
+require_once __DIR__ . '/includes/functions.php';
+
+// Guard: show setup page if DB is unavailable before any queries run
+checkDbConnection();
+/** @var \PDO $pdo */
 
 $userId = $_SESSION['user_id'];
 
@@ -9,14 +13,14 @@ $userId = $_SESSION['user_id'];
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'log_session') {
     $seconds = isset($_POST['seconds']) ? intval($_POST['seconds']) : 0;
     $today = date('Y-m-d');
-    
+
     header('Content-Type: application/json');
     if ($seconds > 0) {
         try {
             $stmt = $pdo->prepare("SELECT duration_seconds FROM study_sessions WHERE user_id = ? AND session_date = ?");
             $stmt->execute([$userId, $today]);
             $existing = $stmt->fetchColumn();
-            
+
             if ($existing !== false) {
                 $update = $pdo->prepare("UPDATE study_sessions SET duration_seconds = duration_seconds + ? WHERE user_id = ? AND session_date = ?");
                 $update->execute([$seconds, $userId, $today]);
@@ -51,7 +55,7 @@ require_once __DIR__ . '/includes/header.php';
         <button class="timer-mode-btn" id="modeShort" data-time="5">Short Break</button>
         <button class="timer-mode-btn" id="modeLong" data-time="15">Long Break</button>
     </div>
-    
+
     <!-- SVG Circular Countdown Progress -->
     <div class="timer-circle-wrap">
         <svg class="timer-svg" width="260" height="260">
@@ -63,13 +67,13 @@ require_once __DIR__ . '/includes/header.php';
             <div class="timer-mode" id="timerActiveModeLabel">Focusing</div>
         </div>
     </div>
-    
+
     <!-- Action buttons -->
     <div class="timer-controls">
         <button class="btn btn-primary" id="timerStartBtn"><i class="fa-solid fa-play"></i> Start</button>
         <button class="btn btn-secondary" id="timerResetBtn"><i class="fa-solid fa-arrows-rotate"></i> Reset</button>
     </div>
-    
+
     <!-- Ambient Sound selector panel -->
     <div class="sound-controls">
         <p style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Background Ambience</p>

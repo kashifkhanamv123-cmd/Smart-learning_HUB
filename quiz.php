@@ -1,8 +1,11 @@
 <?php
 $pageTitle = 'Quizzes';
-require_once __DIR__ . '/auth.php';
-require_once __DIR__ . '/db.php';
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/auth.php'; // also loads db.php
+require_once __DIR__ . '/includes/functions.php';
+
+// Guard: show setup page if DB is unavailable before any queries run
+checkDbConnection();
+/** @var \PDO $pdo */
 
 $userId = $_SESSION['user_id'];
 $quizId = isset($_GET['quiz_id']) ? intval($_GET['quiz_id']) : 0;
@@ -73,6 +76,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         setFlash('error', 'Database error verifying quiz: ' . $e->getMessage());
     }
 }
+
+// All POST handling complete — safe to output HTML now
+require_once __DIR__ . '/includes/header.php';
 
 // --------------------------------------------------------------------------
 // View State 2: Display Quiz Score Report (after submission)

@@ -4,10 +4,7 @@ require_once __DIR__ . '/includes/functions.php';
 
 // Check DB
 checkDbConnection();
-
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+/** @var \PDO $pdo */
 
 $token = isset($_GET['token']) ? trim($_GET['token']) : '';
 $error = '';
