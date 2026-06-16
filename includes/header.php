@@ -21,6 +21,8 @@ $currentUserRole = $_SESSION['user_role'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($pageTitle); ?> - Smart Learning Hub</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="<?php echo getAssetPath('favicon.svg'); ?>">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -58,6 +60,7 @@ $currentUserRole = $_SESSION['user_role'];
                     </div>
                     <span class="username"><?php echo htmlspecialchars($currentUser); ?></span>
                     <div class="profile-dropdown">
+                        <a href="<?php echo getAssetPath('settings.php'); ?>"><i class="fa-solid fa-gear"></i> Settings</a>
                         <a href="<?php echo getAssetPath('logout.php'); ?>"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
                     </div>
                 </div>

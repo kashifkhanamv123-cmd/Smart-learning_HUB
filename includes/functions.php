@@ -164,4 +164,44 @@ function seedDatabase($pdo) {
         error_log("Database Seeding Error: " . $e->getMessage());
     }
 }
+
+/**
+ * Verifies the Google reCAPTCHA response.
+ */
+function verifyRecaptcha($recaptchaResponse) {
+    if (empty($recaptchaResponse)) {
+        return false;
+    }
+    
+    $secretKey = getenv('RECAPTCHA_SECRET_KEY');
+    if (!$secretKey) {
+        // Bypass if no key is configured
+        return true; 
+    }
+    
+    $verifyUrl = 'https://www.google.com/recaptcha/api/siteverify';
+    $data = [
+        'secret' => $secretKey,
+        'response' => $recaptchaResponse,
+        'remoteip' => $_SERVER['REMOTE_ADDR'] ?? ''
+    ];
+    
+    $options = [
+        'http' => [
+            'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+            'method'  => 'POST',
+            'content' => http_build_query($data)
+        ]
+    ];
+    
+    $context  = stream_context_create($options);
+    $result = @file_get_contents($verifyUrl, false, $context);
+    
+    if ($result === false) {
+        return false;
+    }
+    
+    $responseData = json_decode($result, true);
+    return $responseData['success'] ?? false;
+}
 ?>

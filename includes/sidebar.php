@@ -69,6 +69,10 @@ function isActive($file, $dir = '') {
     </nav>
     
     <div class="sidebar-footer">
+        <a href="<?php echo getAssetPath('settings.php'); ?>" class="nav-item <?php echo isActive('settings.php'); ?>" style="margin-bottom: 5px;">
+            <i class="fa-solid fa-gear"></i>
+            <span>Settings</span>
+        </a>
         <a href="<?php echo getAssetPath('logout.php'); ?>" class="nav-item logout-link">
             <i class="fa-solid fa-right-from-bracket"></i>
             <span>Logout</span>

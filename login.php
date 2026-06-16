@@ -31,7 +31,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = trim($_POST['password']);
 
     if (empty($email) || empty($password)) {
-        $error = 'Please fill in all fields.';
+        $error = 'Please enter both email and password.';
+    } elseif (!verifyRecaptcha($_POST['g-recaptcha-response'] ?? '')) {
+        $error = 'Please complete the reCAPTCHA verification.';
     } else {
         try {
             $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
@@ -71,11 +73,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Smart Learning Hub</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 
 <body class="auth-layout">
@@ -112,6 +116,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <i class="fa-solid fa-eye toggle-password" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-dark);" onclick="togglePasswordVisibility('password', this)"></i>
                 </div>
             </div>
+
+            <div class="g-recaptcha" data-sitekey="<?php echo getenv('RECAPTCHA_SITE_KEY'); ?>" style="margin-bottom: 15px;"></div>
 
             <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
                 <i class="fa-solid fa-right-to-bracket"></i> Login
