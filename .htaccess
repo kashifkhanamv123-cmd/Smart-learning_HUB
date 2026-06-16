@@ -1,0 +1,11 @@
+# Disable directory index browsing
+Options -Indexes
+
+# Prevent access to .env files
+<FilesMatch "^\.env">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Custom 404 handler
+ErrorDocument 404 /index.php
