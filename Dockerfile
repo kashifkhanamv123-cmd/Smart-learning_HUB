@@ -16,12 +16,17 @@ RUN a2enmod rewrite php8.1
 
 COPY . /var/www/html/
 RUN rm -f /var/www/html/index.html
+
 RUN chown -R www-data:www-data /var/www/html
 
-RUN echo '<Directory /var/www/html>\n\
-    AllowOverride All\n\
-    Require all granted\n\
-</Directory>' >> /etc/apache2/apache2.conf
+RUN echo '<VirtualHost *:80>\n\
+    DocumentRoot /var/www/html\n\
+    DirectoryIndex index.php index.html\n\
+    <Directory /var/www/html>\n\
+        AllowOverride All\n\
+        Require all granted\n\
+    </Directory>\n\
+</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
 RUN echo 'ServerName localhost' >> /etc/apache2/apache2.conf
 
