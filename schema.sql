@@ -1,6 +1,6 @@
 -- Create database if it does not exist (fallback)
-CREATE DATABASE IF NOT EXISTS `smart_learning_hub` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `smart_learning_hub`;
+--CREATE DATABASE IF NOT EXISTS `smart_learning_hub` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+--USE `smart_learning_hub`;
 
 -- 1. Users Table
 CREATE TABLE IF NOT EXISTS `users` (
