@@ -1,21 +1,29 @@
-FROM php:8.2-apache
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip unzip \
-    && docker-php-ext-install pdo pdo_mysql mbstring
+    apache2 \
+    php8.1 \
+    php8.1-mysql \
+    php8.1-mbstring \
+    php8.1-xml \
+    php8.1-curl \
+    libapache2-mod-php8.1 \
+    && apt-get clean
 
-RUN a2enmod rewrite
+RUN a2enmod rewrite php8.1
 
-WORKDIR /var/www/html
-COPY . .
+COPY . /var/www/html/
+RUN chown -R www-data:www-data /var/www/html
 
-RUN echo '<Directory /var/www/html>\nAllowOverride All\nRequire all granted\n</Directory>' > /etc/apache2/conf-available/custom.conf \
-    && a2enconf custom
+RUN echo '<Directory /var/www/html>\n\
+    AllowOverride All\n\
+    Require all granted\n\
+</Directory>' >> /etc/apache2/apache2.conf
 
 RUN echo 'ServerName localhost' >> /etc/apache2/apache2.conf
 
 EXPOSE 80
-CMD ["apache2-foreground"]
+
+CMD ["apache2ctl", "-D", "FOREGROUND"]
