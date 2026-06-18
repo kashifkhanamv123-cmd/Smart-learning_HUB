@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
 RUN a2enmod rewrite php8.1
 
 COPY . /var/www/html/
+RUN rm -f /var/www/html/index.html
 RUN chown -R www-data:www-data /var/www/html
 
 RUN echo '<Directory /var/www/html>\n\
