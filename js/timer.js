@@ -44,6 +44,11 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('action', 'log_session');
         formData.append('seconds', seconds);
         
+        const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
+        if (csrfTokenMeta) {
+            formData.append('csrf_token', csrfTokenMeta.getAttribute('content'));
+        }
+        
         fetch('timer.php', {
             method: 'POST',
             body: formData

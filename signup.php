@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/rate_limit.php';
 require_once __DIR__ . '/mail.php';
 
 // Check DB
@@ -26,23 +27,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $confirm_password = trim($_POST['confirm_password']);
     $gender = trim($_POST['gender'] ?? '');
     $country = trim($_POST['country'] ?? '');
+    $csrf_token = $_POST['csrf_token'] ?? '';
     
-    // Restrict usernames related to admin
-    $restricted_names = ['admin', 'administrator', 'system admin', 'sysadmin', 'root', 'moderator', 'system'];
-    $name_lower = strtolower($name);
-    $is_restricted = false;
-    foreach ($restricted_names as $restricted) {
-        if (strpos($name_lower, $restricted) !== false) {
-            $is_restricted = true;
-            break;
-        }
-    }
-    
-    if (empty($name) || empty($email) || empty($password) || empty($confirm_password) || empty($gender) || empty($country)) {
+    if (!verifyCsrfToken($csrf_token)) {
+        $error = 'Invalid CSRF token. Please try again.';
+    } elseif (empty($name) || empty($email) || empty($password) || empty($confirm_password) || empty($gender) || empty($country)) {
         $error = 'Please fill in all fields.';
-    } elseif ($is_restricted) {
+    } elseif (!isUsernameAllowed($name)) {
         $error = 'The username cannot contain reserved words like admin or administrator.';
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    } elseif (!isValidEmail($email)) {
         $error = 'Please enter a valid email address.';
     } elseif (strlen($password) < 6) {
         $error = 'Password must be at least 6 characters.';
@@ -113,6 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <form action="signup.php" method="POST">
+            <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
             <div class="form-group">
                 <label for="name">Full Name</label>
                 <input type="text" name="name" id="name" class="form-control" placeholder="Jane Doe" required value="<?php echo isset($_POST['name']) ? htmlspecialchars($_POST['name']) : ''; ?>">

@@ -15,6 +15,13 @@ $adminUserId = $_SESSION['user_id'];
 // Handle Role Toggling
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'toggle_role') {
     $targetUserId = intval($_POST['user_id']);
+    $csrf_token = $_POST['csrf_token'] ?? '';
+    
+    if (!verifyCsrfToken($csrf_token)) {
+        setFlash('error', 'Invalid CSRF token.');
+        header("Location: users.php");
+        exit();
+    }
 
     if ($targetUserId === $adminUserId) {
         setFlash('error', 'Action Denied: You cannot modify your own administrative role.');
@@ -42,6 +49,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 // Handle User Deletion
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_user') {
     $targetUserId = intval($_POST['user_id']);
+    $csrf_token = $_POST['csrf_token'] ?? '';
+    
+    if (!verifyCsrfToken($csrf_token)) {
+        setFlash('error', 'Invalid CSRF token.');
+        header("Location: users.php");
+        exit();
+    }
 
     if ($targetUserId === $adminUserId) {
         setFlash('error', 'Action Denied: You cannot delete your own administrative account.');
@@ -109,6 +123,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
                                 <div class="action-buttons">
                                     <!-- Toggle Role Form -->
                                     <form action="users.php" method="POST" style="display:inline;">
+                                        <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
                                         <input type="hidden" name="action" value="toggle_role">
                                         <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
                                         <button type="submit" class="action-btn promote" title="Toggle Admin Role">
@@ -118,6 +133,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
 
                                     <!-- Delete Profile Form -->
                                     <form action="users.php" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete this user? All their study logs and notes will be lost.');" style="display:inline;">
+                                        <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
                                         <input type="hidden" name="action" value="delete_user">
                                         <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
                                         <button type="submit" class="action-btn delete" title="Delete User">

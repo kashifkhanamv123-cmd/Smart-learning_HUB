@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/rate_limit.php';
 
 // Check DB
 checkDbConnection();
@@ -30,8 +31,11 @@ if (empty($token)) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $user) {
     $password = trim($_POST['password']);
     $confirm_password = trim($_POST['confirm_password']);
+    $csrf_token = $_POST['csrf_token'] ?? '';
     
-    if (empty($password) || empty($confirm_password)) {
+    if (!verifyCsrfToken($csrf_token)) {
+        $error = 'Invalid CSRF token. Please try again.';
+    } elseif (empty($password) || empty($confirm_password)) {
         $error = 'Please fill in all fields.';
     } elseif (strlen($password) < 6) {
         $error = 'Password must be at least 6 characters.';
@@ -93,6 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $user) {
             <?php endif; ?>
             
             <form action="reset_password.php?token=<?php echo htmlspecialchars($token); ?>" method="POST">
+                <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
                 <div class="form-group">
                     <label for="password">New Password</label>
                     <input type="password" name="password" id="password" class="form-control" placeholder="At least 6 characters" required>

@@ -15,6 +15,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $title = trim($_POST['title']);
     $description = trim($_POST['description']);
     $duration = intval($_POST['duration_mins']);
+    $csrf_token = $_POST['csrf_token'] ?? '';
+    
+    if (!verifyCsrfToken($csrf_token)) {
+        setFlash('error', 'Invalid CSRF token.');
+        header("Location: quizzes.php");
+        exit();
+    }
 
     if (!empty($title)) {
         try {
@@ -41,6 +48,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $optD = trim($_POST['option_d']);
     $correct = trim($_POST['correct_option']);
     $explanation = trim($_POST['explanation']);
+    $csrf_token = $_POST['csrf_token'] ?? '';
+    
+    if (!verifyCsrfToken($csrf_token)) {
+        setFlash('error', 'Invalid CSRF token.');
+        header("Location: quizzes.php");
+        exit();
+    }
 
     if ($quizId > 0 && !empty($qText) && !empty($optA) && !empty($optB) && !empty($optC) && !empty($optD) && !empty($correct)) {
         try {
@@ -60,6 +74,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 // Handle Delete Quiz
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_quiz') {
     $deleteQuizId = intval($_POST['quiz_id']);
+    $csrf_token = $_POST['csrf_token'] ?? '';
+    
+    if (!verifyCsrfToken($csrf_token)) {
+        setFlash('error', 'Invalid CSRF token.');
+        header("Location: quizzes.php");
+        exit();
+    }
     try {
         $delete = $pdo->prepare("DELETE FROM quizzes WHERE id = ?");
         $delete->execute([$deleteQuizId]);
@@ -74,6 +95,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 // Handle Delete Question
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_question') {
     $deleteQuestionId = intval($_POST['question_id']);
+    $csrf_token = $_POST['csrf_token'] ?? '';
+    
+    if (!verifyCsrfToken($csrf_token)) {
+        setFlash('error', 'Invalid CSRF token.');
+        header("Location: quizzes.php");
+        exit();
+    }
     try {
         $delete = $pdo->prepare("DELETE FROM questions WHERE id = ?");
         $delete->execute([$deleteQuestionId]);
@@ -139,6 +167,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
                                     </button>
 
                                     <form action="quizzes.php" method="POST" onsubmit="return confirm('Are you sure you want to delete this quiz and all its questions?');" style="display:inline;">
+                                        <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
                                         <input type="hidden" name="action" value="delete_quiz">
                                         <input type="hidden" name="quiz_id" value="<?php echo $q['id']; ?>">
                                         <button type="submit" class="action-btn delete" title="Delete Quiz">
@@ -163,6 +192,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
             <i class="fa-solid fa-xmark modal-close" onclick="closeAddQuizModal()"></i>
         </div>
         <form action="quizzes.php" method="POST">
+            <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
             <div class="modal-body">
                 <input type="hidden" name="action" value="add_quiz">
 
@@ -199,6 +229,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
         <div class="modal-body">
             <!-- Form to add new question -->
             <form action="quizzes.php" method="POST" style="margin-bottom:30px; padding-bottom:20px; border-bottom:1px solid var(--border-color);">
+                <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
                 <input type="hidden" name="action" value="add_question">
                 <input type="hidden" name="quiz_id" id="questions_quiz_id">
 
@@ -312,6 +343,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
                 <td><span class="user-role-badge role-student">${q.correct_option}</span></td>
                 <td>
                     <form action="quizzes.php" method="POST" onsubmit="return confirm('Are you sure you want to remove this question?');" style="display:inline;">
+                        <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
                         <input type="hidden" name="action" value="delete_question">
                         <input type="hidden" name="question_id" value="${q.id}">
                         <button type="submit" class="action-btn delete" style="width:26px; height:26px; font-size:0.8rem;" title="Delete Question">

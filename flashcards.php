@@ -14,6 +14,13 @@ $deckId = isset($_GET['deck_id']) ? intval($_GET['deck_id']) : 0;
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'create_deck') {
     $title = trim($_POST['title']);
     $description = trim($_POST['description']);
+    $csrf_token = $_POST['csrf_token'] ?? '';
+    
+    if (!verifyCsrfToken($csrf_token)) {
+        setFlash('error', 'Invalid CSRF token.');
+        header("Location: flashcards.php");
+        exit();
+    }
     
     if (!empty($title)) {
         try {
@@ -35,6 +42,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $cardDeckId = intval($_POST['deck_id']);
     $front = trim($_POST['front']);
     $back = trim($_POST['back']);
+    $csrf_token = $_POST['csrf_token'] ?? '';
+    
+    if (!verifyCsrfToken($csrf_token)) {
+        setFlash('error', 'Invalid CSRF token.');
+        header("Location: flashcards.php");
+        exit();
+    }
     
     if ($cardDeckId > 0 && !empty($front) && !empty($back)) {
         try {
@@ -63,6 +77,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 // Handle deck deletion
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_deck') {
     $deleteDeckId = intval($_POST['deck_id']);
+    $csrf_token = $_POST['csrf_token'] ?? '';
+    
+    if (!verifyCsrfToken($csrf_token)) {
+        setFlash('error', 'Invalid CSRF token.');
+        header("Location: flashcards.php");
+        exit();
+    }
     try {
         $stmt = $pdo->prepare("SELECT user_id FROM flashcard_decks WHERE id = ?");
         $stmt->execute([$deleteDeckId]);
@@ -227,6 +248,7 @@ if ($deckId > 0):
                             </button>
                             
                             <form action="flashcards.php" method="POST" onsubmit="return confirm('Are you sure you want to delete this entire deck and all its cards?');" style="display:inline;">
+                                <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
                                 <input type="hidden" name="action" value="delete_deck">
                                 <input type="hidden" name="deck_id" value="<?php echo $d['id']; ?>">
                                 <button type="submit" class="btn btn-danger btn-sm" style="padding: 6px 10px;" title="Delete Deck">
@@ -248,6 +270,7 @@ if ($deckId > 0):
                 <i class="fa-solid fa-xmark modal-close" onclick="closeDeckModal()"></i>
             </div>
             <form action="flashcards.php" method="POST">
+                <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
                 <div class="modal-body">
                     <input type="hidden" name="action" value="create_deck">
                     <div class="form-group">
@@ -275,6 +298,7 @@ if ($deckId > 0):
                 <i class="fa-solid fa-xmark modal-close" onclick="closeAddCardModal()"></i>
             </div>
             <form action="flashcards.php" method="POST">
+                <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
                 <div class="modal-body">
                     <input type="hidden" name="action" value="add_card">
                     <input type="hidden" name="deck_id" id="add_card_deck_id">

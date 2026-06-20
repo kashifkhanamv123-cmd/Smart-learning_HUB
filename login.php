@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/rate_limit.php';
 require_once __DIR__ . '/mail.php';
 
 // Check DB Connection
@@ -29,8 +30,11 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email']);
     $password = trim($_POST['password']);
+    $csrf_token = $_POST['csrf_token'] ?? '';
 
-    if (empty($email) || empty($password)) {
+    if (!verifyCsrfToken($csrf_token)) {
+        $error = 'Invalid CSRF token. Please try again.';
+    } elseif (empty($email) || empty($password)) {
         $error = 'Please enter both email and password.';
     } elseif (!verifyRecaptcha($_POST['g-recaptcha-response'] ?? '')) {
         $error = 'Please complete the reCAPTCHA verification.';
@@ -41,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user = $stmt->fetch();
 
             if ($user && password_verify($password, $user['password_hash'])) {
+                session_regenerate_id(true);
                 // Set session data
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_name'] = $user['name'];
@@ -101,6 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php displayFlash(); ?>
 
         <form action="login.php" method="POST">
+            <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
             <div class="form-group">
                 <label for="email">Email Address</label>
                 <input type="email" name="email" id="email" class="form-control" placeholder="name@domain.com" required value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">

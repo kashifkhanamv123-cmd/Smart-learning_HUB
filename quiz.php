@@ -17,6 +17,13 @@ $scoreData = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'submit_quiz') {
     $submitQuizId = intval($_POST['quiz_id']);
     $userAnswers = isset($_POST['answers']) ? $_POST['answers'] : []; // [question_id => 'A'/'B'/'C'/'D']
+    $csrf_token = $_POST['csrf_token'] ?? '';
+    
+    if (!verifyCsrfToken($csrf_token)) {
+        setFlash('error', 'Invalid CSRF token.');
+        header("Location: quiz.php?quiz_id=$submitQuizId");
+        exit();
+    }
     
     try {
         // Fetch quiz details
@@ -197,6 +204,7 @@ if ($scoreData !== null):
             </div>
             
             <form id="quizSubmitForm" action="quiz.php?quiz_id=<?php echo $quizId; ?>" method="POST">
+                <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
                 <input type="hidden" name="action" value="submit_quiz">
                 <input type="hidden" name="quiz_id" value="<?php echo $quizId; ?>">
                 

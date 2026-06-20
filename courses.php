@@ -15,6 +15,13 @@ $lessonId = isset($_GET['lesson_id']) ? intval($_GET['lesson_id']) : 0;
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'complete_lesson') {
     $postLessonId = intval($_POST['lesson_id']);
     $postCourseId = intval($_POST['course_id']);
+    $csrf_token = $_POST['csrf_token'] ?? '';
+    
+    if (!verifyCsrfToken($csrf_token)) {
+        setFlash('error', 'Invalid CSRF token.');
+        header("Location: courses.php?course_id=$postCourseId&lesson_id=$postLessonId");
+        exit();
+    }
     
     try {
         // Toggle lesson completion
@@ -181,6 +188,7 @@ if ($courseId > 0):
                 </div>
                 
                 <form action="courses.php" method="POST">
+                    <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
                     <input type="hidden" name="action" value="complete_lesson">
                     <input type="hidden" name="course_id" value="<?php echo $courseId; ?>">
                     <input type="hidden" name="lesson_id" value="<?php echo $lessonId; ?>">

@@ -13,8 +13,15 @@ $userId = $_SESSION['user_id'];
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'log_session') {
     $seconds = isset($_POST['seconds']) ? intval($_POST['seconds']) : 0;
     $today = date('Y-m-d');
+    $csrf_token = $_POST['csrf_token'] ?? '';
 
     header('Content-Type: application/json');
+    if (!verifyCsrfToken($csrf_token)) {
+        http_response_code(403);
+        echo json_encode(['status' => 'error', 'message' => 'Invalid CSRF token.']);
+        exit();
+    }
+    
     if ($seconds > 0) {
         try {
             $stmt = $pdo->prepare("SELECT duration_seconds FROM study_sessions WHERE user_id = ? AND session_date = ?");

@@ -20,6 +20,7 @@ $currentUserRole = $_SESSION['user_role'];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?php echo generateCsrfToken(); ?>">
     <title><?php echo htmlspecialchars($pageTitle); ?> - Smart Learning Hub</title>
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="<?php echo getAssetPath('favicon.svg'); ?>">

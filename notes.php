@@ -12,6 +12,13 @@ $userId = $_SESSION['user_id'];
 // Handle CRUD Operations
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $action = $_POST['action'];
+    $csrf_token = $_POST['csrf_token'] ?? '';
+    
+    if (!verifyCsrfToken($csrf_token)) {
+        setFlash('error', 'Invalid CSRF token.');
+        header("Location: notes.php");
+        exit();
+    }
     
     if ($action === 'create_note') {
         try {
@@ -103,6 +110,7 @@ require_once __DIR__ . '/includes/header.php';
         <p>Draft summaries in markdown and preview formatted outcomes side-by-side.</p>
     </div>
     <form action="notes.php" method="POST">
+        <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
         <input type="hidden" name="action" value="create_note">
         <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> New Note</button>
     </form>
@@ -147,6 +155,7 @@ require_once __DIR__ . '/includes/header.php';
             </div>
         <?php else: ?>
             <form id="noteEditorForm" action="notes.php" method="POST" style="flex:1; display:flex; flex-direction:column; min-height:0;">
+                <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
                 <input type="hidden" name="action" value="update_note">
                 <input type="hidden" name="note_id" value="<?php echo $activeNote['id']; ?>">
                 
@@ -181,6 +190,7 @@ require_once __DIR__ . '/includes/header.php';
             
             <!-- Hidden delete form -->
             <form id="deleteNoteForm" action="notes.php" method="POST" style="display:none;">
+                <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
                 <input type="hidden" name="action" value="delete_note">
                 <input type="hidden" name="note_id" id="delete_note_id">
             </form>

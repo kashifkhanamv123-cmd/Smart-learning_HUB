@@ -16,6 +16,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $description = trim($_POST['description']);
     $difficulty = trim($_POST['difficulty']);
     $duration = trim($_POST['duration']);
+    $csrf_token = $_POST['csrf_token'] ?? '';
+    
+    if (!verifyCsrfToken($csrf_token)) {
+        setFlash('error', 'Invalid CSRF token.');
+        header("Location: courses.php");
+        exit();
+    }
 
     if (!empty($title)) {
         try {
@@ -38,6 +45,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $title = trim($_POST['title']);
     $content = $_POST['content'];
     $sortOrder = intval($_POST['sort_order']);
+    $csrf_token = $_POST['csrf_token'] ?? '';
+    
+    if (!verifyCsrfToken($csrf_token)) {
+        setFlash('error', 'Invalid CSRF token.');
+        header("Location: courses.php");
+        exit();
+    }
 
     if ($courseId > 0 && !empty($title)) {
         try {
@@ -57,6 +71,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 // Handle Delete Course
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_course') {
     $deleteCourseId = intval($_POST['course_id']);
+    $csrf_token = $_POST['csrf_token'] ?? '';
+    
+    if (!verifyCsrfToken($csrf_token)) {
+        setFlash('error', 'Invalid CSRF token.');
+        header("Location: courses.php");
+        exit();
+    }
     try {
         $delete = $pdo->prepare("DELETE FROM courses WHERE id = ?");
         $delete->execute([$deleteCourseId]);
@@ -71,6 +92,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 // Handle Delete Lesson
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_lesson') {
     $deleteLessonId = intval($_POST['lesson_id']);
+    $csrf_token = $_POST['csrf_token'] ?? '';
+    
+    if (!verifyCsrfToken($csrf_token)) {
+        setFlash('error', 'Invalid CSRF token.');
+        header("Location: courses.php");
+        exit();
+    }
     try {
         $delete = $pdo->prepare("DELETE FROM lessons WHERE id = ?");
         $delete->execute([$deleteLessonId]);
@@ -138,6 +166,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
                                     </button>
 
                                     <form action="courses.php" method="POST" onsubmit="return confirm('Are you sure you want to delete this course and all its lessons? This action is irreversible.');" style="display:inline;">
+                                        <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
                                         <input type="hidden" name="action" value="delete_course">
                                         <input type="hidden" name="course_id" value="<?php echo $c['id']; ?>">
                                         <button type="submit" class="action-btn delete" title="Delete Course">
@@ -162,6 +191,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
             <i class="fa-solid fa-xmark modal-close" onclick="closeAddCourseModal()"></i>
         </div>
         <form action="courses.php" method="POST">
+            <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
             <div class="modal-body">
                 <input type="hidden" name="action" value="add_course">
 
@@ -209,6 +239,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
         <div class="modal-body">
             <!-- Form to add new lesson inside this course -->
             <form action="courses.php" method="POST" style="margin-bottom:30px; padding-bottom:20px; border-bottom:1px solid var(--border-color);">
+                <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
                 <input type="hidden" name="action" value="add_lesson">
                 <input type="hidden" name="course_id" id="lessons_course_id">
 
@@ -298,6 +329,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
                 <td>${wordCount} words</td>
                 <td>
                     <form action="courses.php" method="POST" onsubmit="return confirm('Are you sure you want to remove this lesson?');" style="display:inline;">
+                        <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
                         <input type="hidden" name="action" value="delete_lesson">
                         <input type="hidden" name="lesson_id" value="${l.id}">
                         <button type="submit" class="action-btn delete" style="width:26px; height:26px; font-size:0.8rem;" title="Delete Lesson">

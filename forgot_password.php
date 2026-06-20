@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/rate_limit.php';
 require_once __DIR__ . '/mail.php';
 
 // Check DB
@@ -16,11 +17,15 @@ $message_type = 'success';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email']);
+    $csrf_token = $_POST['csrf_token'] ?? '';
 
-    if (empty($email)) {
+    if (!verifyCsrfToken($csrf_token)) {
+        $message = 'Invalid CSRF token. Please try again.';
+        $message_type = 'error';
+    } elseif (empty($email)) {
         $message = 'Please enter your email address.';
         $message_type = 'error';
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    } elseif (!isValidEmail($email)) {
         $message = 'Please enter a valid email address.';
         $message_type = 'error';
     } else {
@@ -90,6 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <form action="forgot_password.php" method="POST">
+            <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
             <div class="form-group">
                 <label for="email">Email Address</label>
                 <input type="email" name="email" id="email" class="form-control" placeholder="name@domain.com" required value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">

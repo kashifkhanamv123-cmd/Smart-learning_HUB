@@ -1,6 +1,6 @@
 -- Create database if it does not exist (fallback)
---CREATE DATABASE IF NOT EXISTS `smart_learning_hub` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
---USE `smart_learning_hub`;
+CREATE DATABASE IF NOT EXISTS `smart_learning_hub` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `smart_learning_hub`;
 
 -- 1. Users Table
 CREATE TABLE IF NOT EXISTS `users` (
@@ -9,7 +9,6 @@ CREATE TABLE IF NOT EXISTS `users` (
   `email` VARCHAR(150) NOT NULL UNIQUE,
   `password_hash` VARCHAR(255) NOT NULL,
   `role` VARCHAR(20) DEFAULT 'student',
-  `profile_picture` VARCHAR(255) DEFAULT NULL,
   `gender` VARCHAR(20) DEFAULT NULL,
   `country` VARCHAR(100) DEFAULT NULL,
   `reset_token` VARCHAR(64) DEFAULT NULL,
@@ -124,9 +123,3 @@ CREATE TABLE IF NOT EXISTS `study_sessions` (
   FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
   UNIQUE KEY `user_date_unique` (`user_id`, `session_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ============================================================
--- MIGRATION: Run these if upgrading an existing installation
--- ============================================================
-ALTER TABLE `users` ADD COLUMN IF NOT EXISTS `gender` VARCHAR(20) DEFAULT NULL AFTER `role`;
-ALTER TABLE `users` ADD COLUMN IF NOT EXISTS `country` VARCHAR(100) DEFAULT NULL AFTER `gender`;

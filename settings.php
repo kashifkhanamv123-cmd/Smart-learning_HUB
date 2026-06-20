@@ -21,29 +21,28 @@ $user = $stmt->fetch();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
+    $csrf_token = $_POST['csrf_token'] ?? '';
     
-    if ($action === 'update_profile') {
+    if (!verifyCsrfToken($csrf_token)) {
+        $error = 'Invalid CSRF token. Please try again.';
+    } elseif ($action === 'update_profile') {
         $name = trim($_POST['name'] ?? '');
         $email = trim($_POST['email'] ?? '');
         $gender = trim($_POST['gender'] ?? '');
         $country = trim($_POST['country'] ?? '');
         
-        // Admin restriction check
-        $restricted_names = ['admin', 'administrator', 'system admin', 'sysadmin', 'root', 'moderator', 'system'];
-        $name_lower = strtolower($name);
-        $is_restricted = false;
-        foreach ($restricted_names as $restricted) {
-            if (strpos($name_lower, $restricted) !== false && $_SESSION['user_role'] !== 'admin') {
-                $is_restricted = true;
-                break;
-            }
+        $is_restricted = !isUsernameAllowed($name);
+        
+        // Admin restriction check bypass if user is actually an admin
+        if ($_SESSION['user_role'] === 'admin') {
+            $is_restricted = false;
         }
         
         if (empty($name) || empty($email)) {
             $error = 'Name and Email are required.';
         } elseif ($is_restricted) {
             $error = 'The username cannot contain reserved words like admin or administrator.';
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        } elseif (!isValidEmail($email)) {
             $error = 'Please enter a valid email address.';
         } else {
             // Check if email already registered to someone else
@@ -120,6 +119,7 @@ require_once __DIR__ . '/includes/header.php';
         <h2 style="margin-bottom: 15px; font-size: 1.25rem;">Profile Information</h2>
         <form method="POST" action="settings.php">
             <input type="hidden" name="action" value="update_profile">
+            <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
             
             <div class="form-group">
                 <label for="name">Full Name</label>
@@ -168,6 +168,7 @@ require_once __DIR__ . '/includes/header.php';
         <h2 style="margin-bottom: 15px; font-size: 1.25rem;">Change Password</h2>
         <form method="POST" action="settings.php">
             <input type="hidden" name="action" value="update_password">
+            <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
             
             <div class="form-group">
                 <label for="current_password">Current Password</label>
