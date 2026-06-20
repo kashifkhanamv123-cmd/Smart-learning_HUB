@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (empty($name) || empty($email) || empty($password) || empty($confirm_password) || empty($gender) || empty($country)) {
         $error = 'Please fill in all fields.';
     } elseif (!isValidName($name)) {
-        $error = 'Name must start with an alphabet and can only contain letters, numbers, and spaces. Special characters are not allowed.';
+        $error = 'Name must start with an alphabet and can only contain letters and numbers (no spaces or special characters).';
     } elseif (!isUsernameAllowed($name)) {
         $error = 'The username cannot contain reserved words like admin or administrator.';
     } elseif (!isValidEmail($email)) {
