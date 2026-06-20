@@ -7,7 +7,7 @@ if (session_status() === PHP_SESSION_NONE) {
 /**
  * Resolves asset paths dynamically whether in root or admin/ subfolder
  */
-function getAssetPath($path) {
+function getAssetPath(string $path) {
     $currentDir = basename(dirname($_SERVER['SCRIPT_NAME']));
     if ($currentDir === 'admin') {
         return '../' . $path;
@@ -18,7 +18,7 @@ function getAssetPath($path) {
 /**
  * Sets a flash message to display on the next page load
  */
-function setFlash($type, $message) {
+function setFlash(string $type, string $message) {
     $_SESSION['flash'] = [
         'type' => $type, // 'success', 'error', 'warning', 'info'
         'message' => $message
@@ -51,7 +51,7 @@ function displayFlash() {
 /**
  * Automatically seeds default platform data if the database users table is empty
  */
-function seedDatabase($pdo) {
+function seedDatabase(\PDO $pdo) {
     if (!$pdo) return;
     
     try {
@@ -102,7 +102,7 @@ function seedDatabase($pdo) {
         
         $insertLesson->execute([$webDevId, 'CSS Flexbox & CSS Grid Systems', "# CSS Flexbox and CSS Grid\n\nCSS modern alignments provide flexible layouts without floating variables.\n\n### CSS Flexbox (One-Dimensional)\nExcellent for alignment along columns OR rows. Ideal for sidebars, cards headers, and lists.\n\n```css\n.container {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n}\n```\n\n### CSS Grid (Two-Dimensional)\nDesigned for complete layout matrix blocks, handling rows and columns simultaneously. Perfect for dashboard dashboards.\n\n```css\n.grid-container {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));\n  gap: 20px;\n}\n```", 2]);
         
-        $insertLesson->execute([$webDevId, 'Asynchronous Javascript Operations', "# Asynchronous JavaScript\n\nLearn how code runs non-blockingly using promises, callbacks, and remote fetch queries.\n\n### Promising Mechanics:\nPromises represents future completions. They start as `pending`, resolving to `fulfilled` or rejecting to `rejected`.\n\n### Modern Async/Await syntax:\n```javascript\nasync function fetchUserData(userId) {\n  try {\n    const response = await fetch(`https://api.example.com/users/${userId}`);\n    if (!response.ok) throw new Error('Network error');\n    const data = await response.json();\n    console.log(data);\n  } catch (error) {\n    console.error('Error fetching:', error);\n  }\n}\n```", 3]);
+        $insertLesson->execute([$webDevId, 'Asynchronous Javascript Operations', "# Asynchronous JavaScript\n\nLearn how code runs non-blockingly using promises, callbacks, and remote fetch queries.\n\n### Promising Mechanics:\nPromises represents future completions. They start as `pending`, resolving to `fulfilled` or rejecting to `rejected`.\n\n### Modern Async/Await syntax:\n```javascript\nasync function fetchUserData(userId) {\n  try {\n    const response = await fetch(`https://api.example.com/users/\${userId}`);\n    if (!response.ok) throw new Error('Network error');\n    const data = await response.json();\n    console.log(data);\n  } catch (error) {\n    console.error('Error fetching:', error);\n  }\n}\n```", 3]);
 
         // Python Lessons
         $pythonId = $webDevId + 1; // Course 2
@@ -169,7 +169,7 @@ function seedDatabase($pdo) {
 /**
  * Verifies the Google reCAPTCHA response.
  */
-function verifyRecaptcha($recaptchaResponse) {
+function verifyRecaptcha(string $recaptchaResponse) {
     if (empty($recaptchaResponse)) {
         return false;
     }
@@ -218,7 +218,7 @@ function generateCsrfToken() {
 /**
  * Verifies the CSRF token
  */
-function verifyCsrfToken($token) {
+function verifyCsrfToken(string $token) {
     if (!isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
         return false;
     }
@@ -228,14 +228,14 @@ function verifyCsrfToken($token) {
 /**
  * Escapes HTML for XSS prevention
  */
-function e($string) {
+function e(string $string = '') {
     return htmlspecialchars((string)($string ?? ''), ENT_QUOTES, 'UTF-8');
 }
 
 /**
  * Checks if a username contains restricted words
  */
-function isUsernameAllowed($username) {
+function isUsernameAllowed(string $username) {
     $restricted_names = ['admin', 'administrator', 'system admin', 'sysadmin', 'root', 'moderator', 'system'];
     $name_lower = strtolower(trim($username));
     foreach ($restricted_names as $restricted) {
@@ -249,7 +249,7 @@ function isUsernameAllowed($username) {
 /**
  * Validates email format strictly
  */
-function isValidEmail($email) {
+function isValidEmail(string $email) {
     return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
 }
 ?>
