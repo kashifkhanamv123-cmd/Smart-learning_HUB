@@ -40,6 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if (empty($name) || empty($email)) {
             $error = 'Name and Email are required.';
+        } elseif (!isValidName($name)) {
+            $error = 'Name must start with an alphabet and can only contain letters, numbers, and spaces. Special characters are not allowed.';
         } elseif ($is_restricted) {
             $error = 'The username cannot contain reserved words like admin or administrator.';
         } elseif (!isValidEmail($email)) {

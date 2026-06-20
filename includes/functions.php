@@ -247,6 +247,13 @@ function isUsernameAllowed(string $username) {
 }
 
 /**
+ * Validates that a name starts with an alphabet and contains only alphabets, numbers, and spaces.
+ */
+function isValidName(string $name) {
+    return preg_match('/^[a-zA-Z][a-zA-Z0-9 ]*$/', $name) === 1;
+}
+
+/**
  * Validates email format strictly
  */
 function isValidEmail(string $email) {
